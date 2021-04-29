@@ -79,13 +79,13 @@ public class SourceDownloadRunnable implements Runnable {
     }
 
     public void handleResults(final String jsonString) {
-        final ArrayList<Source> sourceList = getSourceList(jsonString);
+        final HashMap<String, Source> sourceMap = getSourceList(jsonString);
         final ArrayList<String> categoryList = getCategoryList(jsonString);
-        mainActivity.runOnUiThread(() -> mainActivity.setSource(sourceList, categoryList));
+        mainActivity.runOnUiThread(() -> mainActivity.setSource(sourceMap, categoryList));
     }
 
-    private ArrayList<Source> getSourceList(String s) {
-        ArrayList<Source> sourceList = new ArrayList<>();
+    private HashMap<String, Source> getSourceList(String s) {
+        HashMap<String, Source> sourceMap = new HashMap<>();
 
         try {
             JSONObject returnObject = new JSONObject(s);
@@ -98,13 +98,13 @@ public class SourceDownloadRunnable implements Runnable {
                 String name = sourceObject.getString("name");
                 String category = sourceObject.getString("category");
 
-                sourceList.add(new Source(id, name ,category));
+                sourceMap.put(name, new Source(id, name ,category));
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        return sourceList;
+        return sourceMap;
     }
 
     private ArrayList<String> getCategoryList(String s) {
