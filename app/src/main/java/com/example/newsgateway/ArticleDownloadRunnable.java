@@ -75,7 +75,7 @@ public class ArticleDownloadRunnable implements Runnable {
 
     public void handleResults(final String jsonString) {
         final ArrayList<Article> articleList = getStoryList(jsonString);
-        //mainActivity.runOnUiThread(() -> mainActivity.setSource(sourceMap, categoryList));
+        newsService.serArticles(articleList);
     }
 
     private ArrayList<Article> getStoryList(String s) {

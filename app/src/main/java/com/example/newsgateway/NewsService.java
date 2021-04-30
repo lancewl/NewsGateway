@@ -48,18 +48,23 @@ public class NewsService extends Service {
                 }
 
             }
-            sendStoryBroadcast();
+            sendArticleBroadcast();
             articleList.clear();
         }).start();
 
         return Service.START_STICKY;
     }
 
-    private void sendStoryBroadcast() {
+    private void sendArticleBroadcast() {
         Intent intent = new Intent();
         intent.setAction(MainActivity.ACTION_NEWS_STORY);
         intent.putExtra(MainActivity.STORY_DATA, articleList);
         sendBroadcast(intent);
+    }
+
+    public void serArticles(ArrayList<Article> al) {
+        articleList.clear();
+        articleList.addAll(al);
     }
 
     @Override
@@ -94,8 +99,9 @@ public class NewsService extends Service {
                         source = (Source) intent.getSerializableExtra(SOURCE_DATA);
 
                     if (source != null) {
-                        // Article download
                         Log.d(TAG, "onReceive: Source broadcast received");
+                        ArticleDownloadRunnable loaderTaskRunnable = new ArticleDownloadRunnable(newsService, source.getId());
+                        new Thread(loaderTaskRunnable).start();
                     }
                     break;
 
