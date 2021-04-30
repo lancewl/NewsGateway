@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
@@ -174,12 +173,12 @@ public class MainActivity extends AppCompatActivity {
 
             switch (action) {
                 case ACTION_NEWS_STORY:
-                    ArrayList<Story> storyList = null;
+                    ArrayList<Article> articleList = null;
 
                     if (intent.hasExtra(STORY_DATA))
-                        storyList = (ArrayList<Story>) intent.getSerializableExtra(STORY_DATA);
+                        articleList = (ArrayList<Article>) intent.getSerializableExtra(STORY_DATA);
 
-                    if (storyList != null) {
+                    if (articleList != null) {
                         // Article download
                         Log.d(TAG, "onReceive: Story List broadcast received");
                     }
