@@ -50,6 +50,7 @@ public class ArticleFragment extends Fragment {
 
             TextView headline = fragment_layout.findViewById(R.id.headline);
             headline.setText(currentArticle.getTitle());
+            headline.setOnClickListener(v -> clickContent(currentArticle.getUrl()));
 
             TextView date = fragment_layout.findViewById(R.id.date);
             date.setText(currentArticle.getPublishedAt());
@@ -59,11 +60,13 @@ public class ArticleFragment extends Fragment {
 
             TextView description = fragment_layout.findViewById(R.id.description);
             description.setText(currentArticle.getDescription());
+            description.setOnClickListener(v -> clickContent(currentArticle.getUrl()));
 
             TextView count = fragment_layout.findViewById(R.id.count);
             count.setText(String.format(Locale.US, "%d of %d", index, total));
 
             ImageView imageView = fragment_layout.findViewById(R.id.image);
+            imageView.setOnClickListener(v -> clickContent(currentArticle.getUrl()));
             Picasso.get().load(currentArticle.getUrlToImage())
                     //.error(R.drawable.brokenimage)
                     //.placeholder(R.drawable.placeholder)
@@ -75,14 +78,9 @@ public class ArticleFragment extends Fragment {
         }
     }
 
-    private void clickFlag(String name) {
-
-        Uri mapUri = Uri.parse("geo:0,0?q=" + Uri.encode(name));
-
-        Intent intent = new Intent(Intent.ACTION_VIEW, mapUri);
-        intent.setPackage("com.google.android.apps.maps");
+    private void clickContent(String url) {
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
         startActivity(intent);
-
     }
 
 }
