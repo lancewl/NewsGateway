@@ -2,4 +2,10 @@
     <string name="app_name">News Gateway</string>
     <string name="drawer_open">Open navigation drawer</string>
     <string name="drawer_close">Close navigation drawer</string>
+    <string name="headline">Headline</string>
+    <string name="nov_02_2019_19_30">Nov 02, 2019 19:30</string>
+    <string name="jeanne_bonner_cnn">Jeanne Bonner, CNN</string>
+    <string name="this_is_the_article_text">This is the article text...</string>
+    <string name="of"># of #</string>
+    <string name="image">Article Image</string>
 </resources>

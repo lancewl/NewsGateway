@@ -47,9 +47,9 @@ public class NewsService extends Service {
                     }
                 }
 
+                sendArticleBroadcast();
+                articleList.clear();
             }
-            sendArticleBroadcast();
-            articleList.clear();
         }).start();
 
         return Service.START_STICKY;
@@ -86,7 +86,6 @@ public class NewsService extends Service {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-
             String action = intent.getAction();
             if (action == null)
                 return;

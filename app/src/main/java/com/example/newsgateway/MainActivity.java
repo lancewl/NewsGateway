@@ -4,6 +4,10 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.viewpager.widget.ViewPager;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -38,11 +42,21 @@ public class MainActivity extends AppCompatActivity {
     private ActionBarDrawerToggle mDrawerToggle;
     private ArrayAdapter<String> sourceAdapter;
     private NewsReceiver newsReceiver;
+    private Source currentSource;
+
+    private ViewPager pager;
+    private List<Fragment> fragments;
+    private MyPageAdapter pageAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        /// Start the news service
+        Intent intent = new Intent(MainActivity.this, NewsService.class);
+        startService(intent);
+
         newsReceiver = new NewsReceiver(this);
 
         mDrawerLayout = findViewById(R.id.drawer_layout);
@@ -68,10 +82,18 @@ public class MainActivity extends AppCompatActivity {
                 R.string.drawer_close  /* "close drawer" description for accessibility */
         );
 
+        // Setup suuportActionBar
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setHomeButtonEnabled(true);
         }
+
+        // Setup Fragment List, Page Viewer and Adapter
+        fragments = new ArrayList<>();
+
+        pageAdapter = new MyPageAdapter(getSupportFragmentManager());
+        pager = findViewById(R.id.viewpager);
+        pager.setAdapter(pageAdapter);
 
         doSourceDownload("all");
     }
@@ -130,6 +152,13 @@ public class MainActivity extends AppCompatActivity {
 
     private void selectDrawerItem(int position) {
         String selectedSource = sourceList.get(position);
+        currentSource = sourceMap.get(selectedSource);
+
+        Intent intent = new Intent();
+        intent.setAction(NewsService.ACTION_MSG_TO_SERVICE);
+        intent.putExtra(NewsService.SOURCE_DATA, currentSource);
+        sendBroadcast(intent);
+
         mDrawerLayout.closeDrawer(mDrawerList);
     }
 
@@ -155,8 +184,24 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private class NewsReceiver extends BroadcastReceiver {
+    private void reDoFragments(ArrayList<Article> articleList) {
+        setTitle(currentSource.getName());
 
+        for (int i = 0; i < pageAdapter.getCount(); i++)
+            pageAdapter.notifyChangeInPosition(i);
+        fragments.clear();
+
+        for (int i = 0; i < articleList.size(); i++) {
+            fragments.add(ArticleFragment.newInstance(articleList.get(i), i+1, articleList.size()));
+        }
+
+        pageAdapter.notifyDataSetChanged();
+        pager.setCurrentItem(0);
+    }
+
+    /*-------------- Private Classes --------------*/
+
+    private class NewsReceiver extends BroadcastReceiver {
         private static final String TAG = "ServiceReceiver";
         private final MainActivity mainActivity;
 
@@ -166,6 +211,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onReceive(Context context, Intent intent) {
+            Log.d(TAG, "onReceive: News receiver received");
 
             String action = intent.getAction();
             if (action == null)
@@ -179,7 +225,7 @@ public class MainActivity extends AppCompatActivity {
                         articleList = (ArrayList<Article>) intent.getSerializableExtra(STORY_DATA);
 
                     if (articleList != null) {
-                        // Article download
+                        reDoFragments(articleList);
                         Log.d(TAG, "onReceive: Story List broadcast received");
                     }
                     break;
@@ -188,5 +234,47 @@ public class MainActivity extends AppCompatActivity {
                     Log.d(TAG, "onReceive: Unknown broadcast received");
             }
         }
+    }
+
+    private class MyPageAdapter extends FragmentPagerAdapter {
+        private long baseId = 0;
+
+
+        MyPageAdapter(FragmentManager fm) {
+            super(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
+        }
+
+        @Override
+        public int getItemPosition(@NonNull Object object) {
+            return POSITION_NONE;
+        }
+
+        @NonNull
+        @Override
+        public Fragment getItem(int position) {
+            return fragments.get(position);
+        }
+
+        @Override
+        public int getCount() {
+            return fragments.size();
+        }
+
+        @Override
+        public long getItemId(int position) {
+            // give an ID different from position when position has been changed
+            return baseId + position;
+        }
+
+        /**
+         * Notify that the position of a fragment has been changed.
+         * Create a new ID for each position to force recreation of the fragment
+         * @param n number of items which have been changed
+         */
+        void notifyChangeInPosition(int n) {
+            // shift the ID returned by getItemId outside the range of all previous fragments
+            baseId += getCount() + n;
+        }
+
     }
 }
