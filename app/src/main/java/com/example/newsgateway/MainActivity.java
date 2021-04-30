@@ -5,6 +5,10 @@ import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.drawerlayout.widget.DrawerLayout;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.util.Log;
@@ -22,6 +26,9 @@ import java.util.Locale;
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
 
+    static final String ACTION_NEWS_STORY = "ACTION_NEWS_STORY";
+    static final String STORY_DATA = "STORY_DATA";
+
     private final HashMap<String, Source> sourceMap = new HashMap<>();
     private final List<String> sourceList = new ArrayList<>();
     private final List<String> categoryList = new ArrayList<>();
@@ -31,11 +38,13 @@ public class MainActivity extends AppCompatActivity {
     private ListView mDrawerList;
     private ActionBarDrawerToggle mDrawerToggle;
     private ArrayAdapter<String> sourceAdapter;
+    private NewsReceiver newsReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        newsReceiver = new NewsReceiver(this);
 
         mDrawerLayout = findViewById(R.id.drawer_layout);
         mDrawerList = findViewById(R.id.drawer_list);
@@ -68,8 +77,20 @@ public class MainActivity extends AppCompatActivity {
         doSourceDownload("all");
     }
 
-    // You need the 2 below to make the drawer-toggle work properly:
+    @Override
+    protected void onResume() {
+        IntentFilter filter = new IntentFilter(ACTION_NEWS_STORY);
+        registerReceiver(newsReceiver, filter);
+        super.onResume();
+    }
 
+    @Override
+    protected void onStop() {
+        unregisterReceiver(newsReceiver);
+        super.onStop();
+    }
+
+    // You need the 2 below to make the drawer-toggle work properly:
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
@@ -128,10 +149,45 @@ public class MainActivity extends AppCompatActivity {
         sourceList.addAll(tempList);
         sourceAdapter.notifyDataSetChanged();
 
-        if (categoryList.size() == 0) {
+        if (categoryList.isEmpty()) {
             categoryList.add("all");
             categoryList.addAll(cList);
             makeMenu();
+        }
+    }
+
+    private class NewsReceiver extends BroadcastReceiver {
+
+        private static final String TAG = "ServiceReceiver";
+        private final MainActivity mainActivity;
+
+        public NewsReceiver(MainActivity mainActivity) {
+            this.mainActivity = mainActivity;
+        }
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            String action = intent.getAction();
+            if (action == null)
+                return;
+
+            switch (action) {
+                case ACTION_NEWS_STORY:
+                    ArrayList<Story> storyList = null;
+
+                    if (intent.hasExtra(STORY_DATA))
+                        storyList = (ArrayList<Story>) intent.getSerializableExtra(STORY_DATA);
+
+                    if (storyList != null) {
+                        // Article download
+                        Log.d(TAG, "onReceive: Story List broadcast received");
+                    }
+                    break;
+
+                default:
+                    Log.d(TAG, "onReceive: Unknown broadcast received");
+            }
         }
     }
 }
