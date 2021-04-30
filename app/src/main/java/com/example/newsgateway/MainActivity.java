@@ -99,11 +99,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
-        // Call super first
-        super.onRestoreInstanceState(savedInstanceState);
-
-        Log.d(TAG, "onRestoreInstanceState: source list size: " + sourceList.size());
+    protected void onResume() {
+        IntentFilter filter = new IntentFilter(ACTION_NEWS_STORY);
+        registerReceiver(newsReceiver, filter);
+        super.onResume();
     }
 
     @Override
