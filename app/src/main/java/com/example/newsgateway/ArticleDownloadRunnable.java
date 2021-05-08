@@ -89,7 +89,7 @@ public class ArticleDownloadRunnable implements Runnable {
                 JSONObject articleObject = articleArray.getJSONObject(i);
 
                 String author = articleObject.getString("author");
-                String title = articleObject.getString("author");
+                String title = articleObject.getString("title");
                 String description = articleObject.getString("description");
                 String url = articleObject.getString("url");
                 String urlToImage = articleObject.getString("urlToImage");
